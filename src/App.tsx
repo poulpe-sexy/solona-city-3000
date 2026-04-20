@@ -3,6 +3,7 @@ import type { Map as LeafletMap } from 'leaflet'
 import FranceMap from './components/FranceMap'
 import DartAnimation from './components/DartAnimation'
 import HudCard from './components/HudCard'
+import CityModal from './components/CityModal'
 import { useCities } from './hooks/useCities'
 import type { City } from './types'
 
@@ -28,6 +29,7 @@ export default function App() {
   const mapRef = useRef<LeafletMap | null>(null)
   const [selectedCity, setSelectedCity] = useState<City | null>(null)
   const [animState, setAnimState] = useState<AnimState | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
 
   const isAnimating = animState !== null
 
@@ -35,16 +37,12 @@ export default function App() {
     const map = mapRef.current
     if (!map) return
     const city = pickWeightedRandom(cities)
-
-    // Reset to overview first (synchronous, no animation) so the target city
-    // is always within the visible viewport when we compute its screen position.
     map.setView([46.5, 2.5], 6, { animate: false })
-
     const containerPt = map.latLngToContainerPoint([city.lat, city.lng])
     const rect = map.getContainer().getBoundingClientRect()
+    setModalOpen(false)
     setAnimState({
       city,
-      // Start below the top edge so the dart is clearly visible from frame 1
       from: { x: window.innerWidth / 2, y: 60 },
       to: { x: containerPt.x + rect.left, y: containerPt.y + rect.top },
     })
@@ -56,9 +54,23 @@ export default function App() {
     setAnimState(null)
   }
 
+  function handleFlyComplete() {
+    setModalOpen(true)
+  }
+
+  function handleModalClose() {
+    setSelectedCity(null)
+    setModalOpen(false)
+  }
+
   return (
     <div className="relative h-screen w-screen">
-      <FranceMap selectedCity={selectedCity} mapRef={mapRef} />
+      <FranceMap
+        selectedCity={selectedCity}
+        mapRef={mapRef}
+        onFlyComplete={handleFlyComplete}
+      />
+
       {animState && (
         <DartAnimation
           from={animState.from}
@@ -66,11 +78,16 @@ export default function App() {
           onComplete={handleAnimComplete}
         />
       )}
+
+      {modalOpen && selectedCity && (
+        <CityModal city={selectedCity} onClose={handleModalClose} />
+      )}
+
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000] pointer-events-none">
         <HudCard
           selectedCity={selectedCity}
           cityCount={cities.length}
-          isDisabled={isLoading || isAnimating}
+          isDisabled={isLoading || isAnimating || modalOpen}
           isAnimating={isAnimating}
           onLaunch={handleLaunch}
         />

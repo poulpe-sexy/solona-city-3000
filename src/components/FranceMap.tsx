@@ -16,9 +16,10 @@ function MapRefSetter({ mapRef }: { mapRef: React.MutableRefObject<LeafletMap | 
 interface Props {
   selectedCity: City | null
   mapRef: React.MutableRefObject<LeafletMap | null>
+  onFlyComplete: () => void
 }
 
-export default function FranceMap({ selectedCity, mapRef }: Props) {
+export default function FranceMap({ selectedCity, mapRef, onFlyComplete }: Props) {
   return (
     <MapContainer
       center={FRANCE_CENTER}
@@ -36,7 +37,7 @@ export default function FranceMap({ selectedCity, mapRef }: Props) {
       />
       <ZoomControl position="bottomright" />
       <MapRefSetter mapRef={mapRef} />
-      <MapController selectedCity={selectedCity} />
+      <MapController selectedCity={selectedCity} onFlyComplete={onFlyComplete} />
     </MapContainer>
   )
 }
