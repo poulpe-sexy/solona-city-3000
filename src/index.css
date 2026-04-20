@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@keyframes hud-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+
+@keyframes hud-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes hud-scanline {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(600%); }
+}
+
+@keyframes hud-flicker {
+  0%, 96%, 100% { opacity: 1; }
+  97%           { opacity: 0.4; }
+  98%           { opacity: 1; }
+  99%           { opacity: 0.6; }
+}
